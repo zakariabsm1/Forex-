@@ -1,0 +1,45 @@
+version: "3.9"
+
+services:
+  forex-api:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      # Telegram
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID}
+      - TELEGRAM_ENABLED=true
+      
+      # Email (اختياري)
+      - SMTP_USER=${SMTP_USER}
+      - SMTP_PASSWORD=${SMTP_PASSWORD}
+      - EMAIL_TO=${EMAIL_TO}
+      - EMAIL_ENABLED=false
+      
+      # Push (ntfy.sh)
+      - PUSH_TOPIC=forex-signals-${RANDOM}
+      - PUSH_ENABLED=true
+      
+      # OANDA API
+      - OANDA_API_KEY=${OANDA_API_KEY}
+      - OANDA_ACCOUNT_ID=${OANDA_ACCOUNT_ID}
+      
+      # MT5 Bridge
+      - MT5_HOST=${MT5_HOST:-host.docker.internal}
+      - MT5_PUSH_PORT=32768
+      - MT5_PULL_PORT=32769
+      
+      # Security
+      - WEBHOOK_SECRET=${WEBHOOK_SECRET:-changeme123}
+      
+      # App
+      - PORT=8000
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
